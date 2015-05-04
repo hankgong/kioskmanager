@@ -63,6 +63,7 @@ public class BootupService extends Service{
         mPm = getBaseContext().getPackageManager();
         Toast.makeText(this, "Bootup Service Started", Toast.LENGTH_LONG).show();
 
+        //If setting is disable system bar, let's do it. Rooted Android is required
         if (mPr.getBoolean("system_bar", true) == false) {
 
             try {
@@ -74,8 +75,8 @@ public class BootupService extends Service{
             }
         }
 
+        //Start the default activity of the chosen package
         if (!mPr.getString("startup", "None").equals("None")) {
-//            Intent intent = new Intent(getBaseContext(), com.example.myapplication2.app)
             Intent newIntent = new Intent(mPm.getLaunchIntentForPackage(mPr.getString("startup", "None")));
             newIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(newIntent);

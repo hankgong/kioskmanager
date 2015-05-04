@@ -1,6 +1,5 @@
 package com.avi.kioskmanager;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -25,23 +24,28 @@ public class StartupFragment extends PreferenceFragment {
     SharedPreferences mPr;
     PackageManager mPm;
 
-    Map<String, String> package2App = new HashMap<String, String>();
+    //It seems that long string or string with dot can't be used as entryValue, so a hashmap is created
+    //List will display appliction name
+    //package name will be stored in the preference
+    //integer converted to string like "0", "1" will be used for entryValue
 
-    List<ApplicationInfo> appsList;
-    List<ApplicationInfo> apps;
+    Map<String, String> mPackage2App = new HashMap<String, String>();
+
+    List<ApplicationInfo> mAppList;
+    List<ApplicationInfo> mAllApps;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         mPm = getActivity().getPackageManager();
-        mPe = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
         mPr = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mPe = mPr.edit();
 
-        appsList = new ArrayList<ApplicationInfo>();
-        apps = mPm.getInstalledApplications(PackageManager.GET_GIDS);
+        mAppList = new ArrayList<ApplicationInfo>();
+        mAllApps = mPm.getInstalledApplications(PackageManager.GET_GIDS);
 
-        for (ApplicationInfo app : apps) {
+        for (ApplicationInfo app : mAllApps) {
             if(mPm.getLaunchIntentForPackage(app.packageName) != null) {
                 // apps with launcher intent
                 if((app.flags & ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) == 1) {
@@ -52,11 +56,10 @@ public class StartupFragment extends PreferenceFragment {
 
                 } else {
                     // user installed apps
-                    appsList.add(app);
+                    mAppList.add(app);
                 }
             }
         }
-
 
         addPreferencesFromResource(R.xml.startup_fragment);
 
@@ -76,20 +79,15 @@ public class StartupFragment extends PreferenceFragment {
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
 
-                    for(int i=0; i< appsList.size()+1; i++){
+                    for(int i=0; i< mAppList.size()+1; i++){
                         if(listPreference.getEntryValues()[i].equals(newValue.toString())) {
                             Log.i("Chosen: ", newValue.toString());
-                            mPe.putString("startup", package2App.get(listPreference.getEntries()[i]));
+                            mPe.putString("startup", mPackage2App.get(listPreference.getEntries()[i]));
                             mPe.commit();
                             listPreference.setSummary(listPreference.getEntries()[i]);
                         }
                     }
 
-//                    Log.i("Chosen: ", newValue.toString());
-//                    mPe.putString("startup", newValue.toString());
-//                    mPe.commit();
-
-//                    listPreference.setSummary(listPreference.getEntries()[listPreference.findIndexOfValue(newValue.toString())]);
                     return false;
                 }
             });
@@ -100,8 +98,8 @@ public class StartupFragment extends PreferenceFragment {
 
     protected void setListPreferenceData(ListPreference lp) {
 
-        CharSequence[] entries = new CharSequence[appsList.size()+1];
-        CharSequence[] entryValues = new CharSequence[appsList.size()+1];
+        CharSequence[] entries = new CharSequence[mAppList.size()+1];
+        CharSequence[] entryValues = new CharSequence[mAppList.size()+1];
 
         String name;
         name = mPr.getString("startup", "None");
@@ -109,17 +107,16 @@ public class StartupFragment extends PreferenceFragment {
 
         entries[0] = "None";
         entryValues[0] = "0";
-        package2App.put("None", "None");
+        mPackage2App.put("None", "None");
         int index = 0;
 
-        for (int i=0; i<appsList.size(); i++) {
-            entries[i+1] = appsList.get(i).loadLabel(mPm).toString();
+        for (int i=0; i< mAppList.size(); i++) {
+            entries[i+1] = mAppList.get(i).loadLabel(mPm).toString();
             entryValues[i+1] = Integer.toString(i+1);
-            package2App.put(appsList.get(i).loadLabel(mPm).toString(), appsList.get(i).packageName);
-//            entryValues[i+1] = appsList.get(i).packageName;
+            mPackage2App.put(mAppList.get(i).loadLabel(mPm).toString(), mAppList.get(i).packageName);
 
-            System.out.println(appsList.get(i).packageName + " " + mPm.getLaunchIntentForPackage(appsList.get(i).packageName));
-            if (name.equals(appsList.get(i).packageName)) {
+            System.out.println(mAppList.get(i).packageName + " " + mPm.getLaunchIntentForPackage(mAppList.get(i).packageName));
+            if (name.equals(mAppList.get(i).packageName)) {
                 index = i+1;
             }
         }

@@ -26,26 +26,24 @@ public class SystemFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
 
         mPm = getActivity().getPackageManager();
-        mPe = PreferenceManager.getDefaultSharedPreferences(getActivity()).edit();
         mPr = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mPe = mPr.edit();
 
         addPreferencesFromResource(R.xml.system_fragment);
 
         final SwitchPreference systembarSwitchPreference = (SwitchPreference)findPreference("SystemBar");
 
-        Log.i("Switch:", " " +systembarSwitchPreference.getSwitchTextOn());
 
-
-
-
-        systembarSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-            @Override
-            public boolean onPreferenceClick(Preference preference) {
-                systembarSwitchPreference.setChecked(mPr.getBoolean("system_bar", false));
-
-                return false;
-            }
-        });
+//        systembarSwitchPreference.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+//            @Override
+//            public boolean onPreferenceClick(Preference preference) {
+//
+//                Log.i("ssystem:", "clicked.................");
+//                systembarSwitchPreference.setChecked(mPr.getBoolean("system_bar", false));
+//
+//                return false;
+//            }
+//        });
 
         systembarSwitchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
@@ -56,9 +54,6 @@ public class SystemFragment extends PreferenceFragment {
                     mPe.putBoolean("system_bar", true);
                     mPe.commit();
                     try {
-                        Log.i("System bar", "turn on");
-//                        Process proc = Runtime.getRuntime().exec(new String[]{
-//                                "am","startservice","-n","com.android.systemui/.SystemUIService"});
                         Process proc = Runtime.getRuntime().exec(new String[]{
                                 "su","-c", "am startservice -n com.android.systemui/.SystemUIService"});
                         proc.waitFor();
@@ -76,9 +71,6 @@ public class SystemFragment extends PreferenceFragment {
                         Log.i("System bar", "turn off");
                         Process proc = Runtime.getRuntime().exec(new String[]{
                                 "su","-c","service call activity 42 s16 com.android.systemui"});
-//                        proc.waitFor();
-//                        Process proc = Runtime.getRuntime().exec(new String[]{
-//                                "am","startservice","-n","com.android.systemui/.SystemUIService"});
                         proc.waitFor();
                         proc.destroy();
                     } catch (Exception e) {
