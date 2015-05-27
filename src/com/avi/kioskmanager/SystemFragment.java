@@ -10,6 +10,8 @@ import android.preference.PreferenceManager;
 import android.preference.SwitchPreference;
 import android.util.Log;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.security.KeyStore;
 
 /**
@@ -48,31 +50,69 @@ public class SystemFragment extends PreferenceFragment {
         systembarSwitchPreference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                Log.i("system bar", ".........");
+//                Log.i("system bar", ".........");
                 if(systembarSwitchPreference.isChecked()) {
-                    Log.i("System bar", "turn on");
+//                    Log.i("System bar", "turn on");
                     mPe.putBoolean("system_bar", true);
                     mPe.commit();
                     try {
-                        Process proc = Runtime.getRuntime().exec(new String[]{
-                                "su","-c", "am startservice -n com.android.systemui/.SystemUIService"});
+                        Runtime rt = Runtime.getRuntime();
+                        Process proc = rt.exec(
+//                                "su","-c", "am startservice -n com.android.systemui/.SystemUIService"});
+//                                "su -c /system/bin/am 744 startservice -n com.android.systemui/.SystemUIService");
+                                "su");
+                        rt.exec("su");
+                        proc = rt.exec("/system/bin/am startservice -n com.android.systemui/.SystemUIService");
+
+                        BufferedReader in = new BufferedReader((new InputStreamReader(proc.getInputStream())));
+                        int read;
+                        char[] buffer = new char[4096];
+                        StringBuffer output = new StringBuffer();
+                        while ((read = in.read(buffer)) > 0) {
+                            output.append(buffer, 0, read);
+                        }
+
+                        System.out.print("turning..." + output);
+
                         proc.waitFor();
+
+
                         proc.destroy();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
 
                 } else {
-                    Log.i("System bar", "turn off");
+//                    Log.i("System bar", "turn off");
                     mPe.putBoolean("system_bar", false);
                     mPe.commit();
 
                     try {
-                        Log.i("System bar", "turn off");
-                        Process proc = Runtime.getRuntime().exec(new String[]{
-                                "su","-c","service call activity 42 s16 com.android.systemui"});
-                        proc.waitFor();
-                        proc.destroy();
+//                        Log.i("System bar", "turn off");
+                        Runtime rt = Runtime.getRuntime();
+                        Process proc = rt.exec(
+
+//                                Process proc = Runtime.getRuntime().exec(new String[]{
+//                                "su","-c","service call activity 42 s16 com.android.systemui"});
+//                                "/system/bin/service 744 call activity 42 s16 com.android.systemui"});
+                                        "su");
+                        rt.exec("su");
+                        proc = rt.exec("/system/bin/service call activity 42 s16 com.android.systemui");
+
+                        BufferedReader in = new BufferedReader((new InputStreamReader(proc.getInputStream())));
+                        int read;
+                        char[] buffer = new char[4096];
+                        StringBuffer output = new StringBuffer();
+                        while ((read = in.read(buffer)) > 0) {
+                            output.append(buffer, 0, read);
+                        }
+
+                        System.out.print("turning..." + output);
+
+//                        proc.waitFor();
+
+
+//                        proc.destroy();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
